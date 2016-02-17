@@ -22,8 +22,23 @@ namespace HallsByra.Rx.Tests
             var result = await src.ToArray();
 
             // Then
-            result.Should().Equal(1, 2, 3);
-            
+            result.Should().Equal(1, 2, 3);            
+        }
+
+        [Fact]
+        public async Task returns_the_current_element_when_awaited()
+        {
+            // Given
+            var src = new Subject<int>();
+            var behave = src.CacheLast();
+            var s1 = behave.Subscribe(_ => {});
+            src.OnNext(11);
+
+            // When
+            var current = await behave.Take(1);
+
+            // Then
+            current.Should().Be(11);
         }
 
         [Fact]

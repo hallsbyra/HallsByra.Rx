@@ -16,26 +16,37 @@ namespace HallsByra.Rx
 
     public static class IObservableExtensions
     {
+        /// <summary>
+        /// Silently skips null values from source.
+        /// </summary>
         public static IObservable<T> SkipNull<T>(this IObservable<T> source) => source.Where(o => o != null);
 
-        public static IObservable<Pair<T>> PairWithPrevious<T>(this IObservable<T> source, T firstValue = default(T)) =>
+        /// <summary>
+        /// Combines each element with its predecessor into a Pair instance.
+        /// </summary>
+        /// <param name="firstPreviousValue">Value to use as Previous in the first produced pair.</param>
+        public static IObservable<Pair<T>> PairWithPrevious<T>(this IObservable<T> source, T firstPreviousValue = default(T)) =>
               source.Scan(
-                  new Pair<T>() { Previous = default(T), Current = firstValue },
+                  new Pair<T>() { Previous = default(T), Current = firstPreviousValue },
                   (acc, current) => new Pair<T>() { Previous = acc.Current, Current = current });
 
 
+        /// <summary>
+        /// Caches the last seen element in source, making it immediately available to new subscribers.
+        /// Like Replay(1), but "forgets" the cached value when there are no subscribers.
+        /// </summary>
         public static IObservable<T> CacheLast<T>(this IObservable<T> source) => source.MulticastWeak(() => new ReplaySubject<T>(1));
 
+        /// <summary>
+        /// Provides the functionality of a BehaviourSubject for an observable.
+        /// </summary>
+        public static IObservable<T> Behave<T>(this IObservable<T> source, Func<T> produceInitialValue) => source.MulticastWeak(() => new BehaviorSubject<T>(produceInitialValue()));
 
         /// <summary>
         /// Variation of Multicast that accepts a subject factory instead of a subject instance. When the first subscription is
         /// made, the subject is created. When the last subscription is disposed, the subject is disposed. Each time the
         /// subscription count rises above zero, the subject is recreated.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="createSubject"></param>
-        /// <returns></returns>
         public static IObservable<T> MulticastWeak<T>(this IObservable<T> source, Func<ISubject<T>> createSubject)
         {
             object mutex = new object();
