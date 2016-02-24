@@ -4,7 +4,7 @@ You got to have them somewhere - your favorite extensions and helpers for RX. Th
 For now, it's just these extensions to IObservable:
 
 Extension|Description
--|-
+---|---
 `Behave`|Applies the functionality of a BehaviorSubject to an IObservable  
 `CacheLast`|"Weakly" caches the last element.
 `MulticastWeak`|MultiCast that recreates/disposes its ISubject upon subscribe/unsubscribe.. 
@@ -14,7 +14,7 @@ Extension|Description
 and this little helper:
 
 Name|Description
--|-
+---|---
 `FileSystem.WhenFileChanges`|Observes a file for changes
 
 ##Behave
