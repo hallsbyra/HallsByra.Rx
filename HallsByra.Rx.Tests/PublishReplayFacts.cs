@@ -16,7 +16,7 @@ namespace HallsByra.Rx.Tests
         public async Task returns_all_elements()
         {
             // Given
-            var src = new [] {1,2,3}.ToObservable().CacheLast();
+            var src = new [] {1,2,3}.ToObservable().PublishReplay();
 
             // When
             var result = await src.ToArray();
@@ -30,7 +30,7 @@ namespace HallsByra.Rx.Tests
         {
             // Given
             var src = new Subject<int>();
-            var behave = src.CacheLast();
+            var behave = src.PublishReplay();
             var s1 = behave.Subscribe(_ => {});
             src.OnNext(11);
 
@@ -46,7 +46,7 @@ namespace HallsByra.Rx.Tests
         {
             // Given
             var src = new Subject<int>();
-            var behave = src.CacheLast();
+            var behave = src.PublishReplay();
             var s1Elements = new List<int>();
             var s2Elements = new List<int>();
 
@@ -66,7 +66,7 @@ namespace HallsByra.Rx.Tests
         {
             // Given
             var src = new Subject<int>();
-            var behave = Observable.Return(0).Concat(src).CacheLast();
+            var behave = Observable.Return(0).Concat(src).PublishReplay();
             var s1Elements = new List<int>();
             var s2Elements = new List<int>();
 
@@ -85,7 +85,7 @@ namespace HallsByra.Rx.Tests
         {
             // Given
             var src = new Subject<int>();
-            var behave = Observable.Return(0).Concat(src).CacheLast();
+            var behave = Observable.Return(0).Concat(src).PublishReplay();
             var s1Elements = new List<int>();
             var s2Elements = new List<int>();
 

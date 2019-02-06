@@ -8,12 +8,6 @@ using System.Threading.Tasks;
 
 namespace HallsByra.Rx
 {
-    public class Pair<T>
-    {
-        public T Previous { get; set; }
-        public T Current { get; set; }
-    }
-
     public static class IObservableExtensions
     {
         /// <summary>
@@ -25,29 +19,28 @@ namespace HallsByra.Rx
         /// Combines each element with its predecessor into a Pair instance.
         /// </summary>
         /// <param name="firstPreviousValue">Value to use as Previous in the first produced pair.</param>
-        public static IObservable<Pair<T>> PairWithPrevious<T>(this IObservable<T> source, T firstPreviousValue = default(T)) =>
+        public static IObservable<(T Previous, T Current)> PairWithPrevious<T>(this IObservable<T> source, T firstPreviousValue = default(T)) =>
               source.Scan(
-                  new Pair<T>() { Previous = default(T), Current = firstPreviousValue },
-                  (acc, current) => new Pair<T>() { Previous = acc.Current, Current = current });
+                  (Previous: default(T), Current: firstPreviousValue),
+                  (acc, current) => (Previous: acc.Current, Current: current));
 
 
         /// <summary>
-        /// Caches the last seen element in source, making it immediately available to new subscribers.
-        /// Like Replay(1), but "forgets" the cached value when there are no subscribers.
+        /// Multicast, with a ReplaySubject.
         /// </summary>
-        public static IObservable<T> CacheLast<T>(this IObservable<T> source) => source.MulticastWeak(() => new ReplaySubject<T>(1));
+        public static IObservable<T> PublishReplay<T>(this IObservable<T> source, int bufferSize = 1) => source.Multicast(() => new ReplaySubject<T>(bufferSize));
 
         /// <summary>
-        /// Provides the functionality of a BehaviourSubject for an observable.
+        /// Multicast, with BehaviorSubject.
         /// </summary>
-        public static IObservable<T> Behave<T>(this IObservable<T> source, Func<T> produceInitialValue) => source.MulticastWeak(() => new BehaviorSubject<T>(produceInitialValue()));
+        public static IObservable<T> PublishBehavior<T>(this IObservable<T> source, Func<T> produceInitialValue) => source.Multicast(() => new BehaviorSubject<T>(produceInitialValue()));
 
         /// <summary>
         /// Variation of Multicast that accepts a subject factory instead of a subject instance. When the first subscription is
         /// made, the subject is created. When the last subscription is disposed, the subject is disposed. Each time the
         /// subscription count rises above zero, the subject is recreated.
         /// </summary>
-        public static IObservable<T> MulticastWeak<T>(this IObservable<T> source, Func<ISubject<T>> createSubject)
+        public static IObservable<T> Multicast<T>(this IObservable<T> source, Func<ISubject<T>> createSubject)
         {
             object mutex = new object();
             ISubject<T> subject = null;
